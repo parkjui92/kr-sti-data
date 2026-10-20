@@ -1,0 +1,43 @@
+{
+  "_comment": "우리가 쓰는 표의 ID와 뜻. 코드가 아니라 데이터로 둔다. year_basis: 값이 가리키는 연도(조사연도가 아니라 대상연도). verified_at: ID·이름을 원본과 대조한 날.",
+  "kosis": {
+    "org": "127",
+    "org_name": "과학기술정보통신부",
+    "tables": {
+      "DT_KBA0010": {"name": "연구수행주체별 연구개발비(재원, 비목, 연구개발단계)", "survey": "연구개발활동조사", "scope": "총R&D(정부+민간)", "year_basis": "대상연도", "prd": "1991-2024", "verified_at": "2026-10-20"},
+      "DT_KBA0003": {"name": "연구수행주체별 연구개발비", "survey": "연구개발활동조사", "scope": "총R&D", "year_basis": "대상연도", "verified_at": "2026-10-20"},
+      "DT_KBA0004": {"name": "비목별 연구개발비", "survey": "연구개발활동조사", "scope": "총R&D", "year_basis": "대상연도", "verified_at": "2026-10-20"},
+      "DT_KBA0099": {"name": "연구수행주체별 연구개발비(경제사회목적)", "survey": "연구개발활동조사", "scope": "총R&D", "year_basis": "대상연도", "verified_at": "2026-10-20"},
+      "DT_KBA0028": {"name": "연구수행주체별 연구개발인력(총수, 상근상당)", "survey": "연구개발활동조사", "scope": "총R&D", "year_basis": "대상연도", "verified_at": "2026-10-20"},
+      "DT_KBA0009": {"name": "연구개발수행기관", "survey": "연구개발활동조사", "scope": "총R&D", "year_basis": "대상연도", "verified_at": "2026-10-20"},
+      "DT_KBA0007": {"name": "인구 만명당 연구개발인력 및 연구원", "survey": "연구개발활동조사", "scope": "총R&D", "year_basis": "대상연도", "verified_at": "2026-10-20"},
+      "DT_127003_001": {"name": "국가연구개발사업의 총괄 집행 추이", "survey": "국가연구개발사업통계(조사·분석)", "scope": "정부R&D", "year_basis": "집행연도", "verified_at": "2026-10-20"},
+      "DT_127003_002": {"name": "부처별 국가연구개발사업 집행 추이", "survey": "국가연구개발사업통계(조사·분석)", "scope": "정부R&D", "year_basis": "집행연도", "verified_at": "2026-10-20"},
+      "DT_127003_003": {"name": "주요부처별 연구개발단계별 집행 추이", "survey": "국가연구개발사업통계(조사·분석)", "scope": "정부R&D", "year_basis": "집행연도", "verified_at": "2026-10-20"},
+      "DT_127003_004": {"name": "주요부처별 연구수행주체별 집행 추이", "survey": "국가연구개발사업통계(조사·분석)", "scope": "정부R&D", "year_basis": "집행연도", "verified_at": "2026-10-20"},
+      "DT_127003_007": {"name": "연구수행주체별 집행 추이", "survey": "국가연구개발사업통계(조사·분석)", "scope": "정부R&D", "year_basis": "집행연도", "verified_at": "2026-10-20"},
+      "DT_127003_009": {"name": "지역별 집행 추이", "survey": "국가연구개발사업통계(조사·분석)", "scope": "정부R&D", "year_basis": "집행연도", "verified_at": "2026-10-20"},
+      "DT_127003_011": {"name": "국가과학기술표준분류 연구분야별 집행 추이", "survey": "국가연구개발사업통계(조사·분석)", "scope": "정부R&D", "year_basis": "집행연도", "verified_at": "2026-10-20"},
+      "DT_127003_017": {"name": "성별 연구책임자 추이", "survey": "국가연구개발사업통계(조사·분석)", "scope": "정부R&D", "year_basis": "집행연도", "verified_at": "2026-10-20"}
+    }
+  },
+  "nabo": {
+    "base": "https://www.nabostats.go.kr/openapi/Sttsapitbldata.do",
+    "tables": {
+      "T183673001055637": {"name": "재원별 총연구개발비", "source": "연구개발활동조사(과기정통부·KISTEP)", "scope": "총R&D", "verified_at": "2026-10-12"},
+      "T198263007125149": {"name": "연구개발단계별 연구개발비", "source": "연구개발활동조사(과기정통부·KISTEP)", "scope": "총R&D", "verified_at": "2026-10-12"},
+      "T194693006634908": {"name": "기관별 연구개발비", "source": "연구개발활동조사(과기정통부·KISTEP)", "scope": "총R&D", "verified_at": "2026-10-12"},
+      "T181563001093511": {"name": "국가R&D 기술료 징수실적", "source": "국가연구개발사업 조사·분석(과기정통부·KISTEP)", "scope": "정부R&D", "verified_at": "2026-10-12"},
+      "T184003001078306": {"name": "국가R&D SCI 논문 성과", "source": "국가연구개발사업 조사·분석(과기정통부·KISTEP)", "scope": "정부R&D", "verified_at": "2026-10-12"}
+    }
+  },
+  "ntis": {
+    "portal": "https://www.ntis.go.kr/rndopen/api/mng/apiMain.do",
+    "services": ["국가R&D 과제검색", "국가R&D 성과검색(논문·특허·연구시설장비)", "국가R&D 수행기관 R&D현황조회", "국가R&D 연구보고서 검색", "이슈로보는R&D", "국가R&D 용어사전", "과학기술표준분류코드/국가중점기술코드", "연관콘텐츠 추천"],
+    "approval": "NTIS 로그인 → 회원정보에 소속기관 등록 → 활용신청 → 기관 확인 뒤 승인(며칠). 명세는 승인 뒤 매뉴얼",
+    "status": "미승인 — 어댑터는 키·명세 확보 뒤 작성"
+  },
+  "breaks": [
+    {"applies_to": ["정부R&D 예산"], "year": 2024, "note": "R&D 예산 기준 변경 — 약 1.8조원이 R&D→非R&D로 재분류되어 2023↔2024 증감률 단순 비교 주의(KISTEP 2026년도 정부연구개발예산 현황분석)"}
+  ]
+}
