@@ -20,7 +20,7 @@ python3 sti.py export --source kosis --tbl DT_KBA0010 --out rnd_by_sector.csv
 | 소스 | 받는 것 | 키 | 상태 |
 |---|---|---|---|
 | **KOSIS** `kosis.kr/openapi` | 연구개발활동조사(총R&D: 재원·비목·단계·주체·인력·기관), 국가연구개발사업통계(정부R&D 집행: 부처·단계·주체·지역·분야·연구책임자) — orgId 127 | kosis.kr 회원 → 공유서비스 활용신청 | **동작** (2026-10-20 15표 실수집) |
-| **NABOSTATS** `nabostats.go.kr` | 재원·단계·기관별 연구개발비, 기술료, SCI 논문 성과(표 5종) | nabostats.go.kr 발급 | 수집기 이식 완료, 키 있을 때 실검증 |
+| **NABOSTATS** `nabostats.go.kr` | 재원·단계·기관별 연구개발비, 기술료, SCI 논문 성과(표 5종) | nabostats.go.kr 발급(로그인 뒤) | **동작** (2026-10-20 5표 실수집, list_total_count 1:1) |
 | **NTIS OpenAPI** | 과제검색·성과검색·수행기관·연구보고서 등 8종 REST | NTIS 로그인 → **소속기관 등록 → 활용신청 → 승인(며칠)** | `ntis status`만. 승인·명세 뒤 어댑터 |
 | PRISM(정책연구용역) | 74,129건 | 공공데이터포털 | [prism-db](https://github.com/parkjui92/prism-db)를 그대로 쓴다 |
 
@@ -55,7 +55,8 @@ KOSIS 자료 API는 표마다 분류 수준(objL1~8)이 달라 호출 형식을 
 
 - `kosis fetch --all` 15표 전수 수집(최장 1975~2024), `verify` 최신 연도 재조회 15/15 일치, 셀 0인 연도 0
 - 상한 대비 55~100%는 결손이 아니라 과거 연도에 없던 분류(빈 셀을 KOSIS가 생략) — 그래서 "빈 연도"를 따로 센다
-- NABOSTATS·NTIS는 키·승인 뒤 실검증 예정
+- `nabo fetch --all` 5표(56·172·200·22·33행) 공식 총건수와 1:1 일치
+- NTIS는 활용신청 승인 뒤 실검증 예정
 
 ## 한계
 
