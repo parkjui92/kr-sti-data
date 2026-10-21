@@ -28,7 +28,7 @@ from collections import Counter, OrderedDict
 from datetime import datetime
 from pathlib import Path
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 HERE = Path(__file__).resolve().parent
 HOME = Path(os.environ.get("KR_STI_HOME", Path.home() / ".kr-sti"))
 DB_PATH = Path(os.environ.get("KR_STI_DB", HOME / "sti.db"))
@@ -217,6 +217,8 @@ def kosis_meta(args):
 
 
 def _year_chunks(start: int, end: int, size: int):
+    if size < 1 or start > end:
+        raise ValueError("연도 범위는 시작 ≤ 종료, --chunk 는 1 이상이어야 합니다")
     y = start
     while y <= end:
         yield y, min(end, y + size - 1)
@@ -224,6 +226,8 @@ def _year_chunks(start: int, end: int, size: int):
 
 
 def kosis_fetch(args):
+    if args.chunk < 1 or (args.frm is not None and args.to is not None and args.frm > args.to):
+        raise SystemExit("연도 범위는 --from ≤ --to, --chunk 는 1 이상이어야 합니다")
     con = open_db()
     org = args.org
     tbls = [args.tbl] if args.tbl else (list(CATALOG["kosis"]["tables"]) if args.all else [])
@@ -234,9 +238,15 @@ def kosis_fetch(args):
         if not t or not t[2]:
             print(f"! {tbl}: 시점 정보 없음, 건너뜀", file=sys.stderr)
             continue
+        if any(str(sn) not in {"1", "2", "3", "4"} for sn in levels):
+            raise SystemExit(f"{tbl}: 5수준 이상 분류는 현재 저장 형식으로 보존할 수 없어 수집하지 않습니다")
+        if t[1] not in ("년", "Y"):
+            raise SystemExit(f"{tbl}: 연간 통계만 지원합니다 (주기 {t[1]})")
         prd_se_code = {"년": "Y", "월": "M", "분기": "Q", "반기": "S"}.get(t[1], "Y")
         y0 = max(int(t[2][:4]), args.frm or 0)
         y1 = min(int(t[3][:4]), args.to or 9999)
+        if y0 > y1:
+            raise SystemExit(f"{tbl}: 요청 연도가 제공 범위 {t[2]}~{t[3]}와 겹치지 않습니다")
         total = 0
         per_year = Counter()
         for a, b in _year_chunks(y0, y1, args.chunk):
@@ -255,6 +265,10 @@ def kosis_fetch(args):
                         cells += kosis_call("Param/statisticsParameterData.do", **params)
                 else:
                     raise
+            if any(c.get("DT") in (None, "") for c in cells):
+                raise RuntimeError(f"{tbl} {a}~{b}: 값이 비어 있음 — 기존 자료를 바꾸지 않고 멈춤")
+            con.execute("DELETE FROM kosis_cells WHERE org=? AND tbl=? AND prd_de BETWEEN ? AND ?",
+                        (org, tbl, str(a), str(b)))
             for c in cells:
                 row = (org, tbl, c.get("PRD_DE"), c.get("ITM_ID"), c.get("ITM_NM"),
                        c.get("C1", ""), c.get("C1_NM"), c.get("C2", ""), c.get("C2_NM"),
@@ -312,21 +326,32 @@ def nabo_fetch(args):
     con = open_db()
     tbls = [args.tbl] if args.tbl else list(CATALOG["nabo"]["tables"])
     for tbl in tbls:
-        got, page, total = 0, 1, None
+        page, expected, collected = 1, None, []
+        seen = set()
         while True:
             q = urllib.parse.urlencode(dict(STATBL_ID=tbl, DTACYCLE_CD="YY", Type="json", pIndex=page, pSize=1000, KEY=key))
             total, rows = nabo_envelope(http_json(f"{NABO}?{q}"))
+            if not isinstance(total, int) or total < 0 or (expected is not None and total != expected):
+                raise RuntimeError(f"{tbl}: 공식 총건수가 없거나 수집 중 바뀜 — 기존 자료를 유지합니다")
+            expected = total
             for r in rows:
                 if r["val"] in (None, ""):
-                    raise RuntimeError(f"{tbl} {r['year']} {r['grp']}/{r['cls']}/{r['itm']}: 값이 비어 있음 — 0으로 바꾸지 않고 멈춤")
-                con.execute("INSERT OR REPLACE INTO nabo_rows VALUES(?,?,?,?,?,?,?,?)",
-                            (tbl, r["year"], r["grp"], r["cls"], r["itm"], str(r["val"]), r["unit"], now()))
-            got += len(rows)
-            con.commit()
-            if not rows or (total is not None and got >= total):
+                    raise RuntimeError(f"{tbl} {r['year']}: 값이 비어 있음 — 기존 자료를 유지합니다")
+                ident = (r["year"], r["grp"], r["cls"], r["itm"])
+                if ident in seen:
+                    raise RuntimeError(f"{tbl}: 중복 행 — 기존 자료를 유지합니다")
+                seen.add(ident)
+                collected.append((tbl, *ident, str(r["val"]), r["unit"], now()))
+            if not rows or len(collected) >= expected:
                 break
             page += 1
-        log_harvest(con, "nabo", tbl, "fetch", total, got, "" if total == got else f"결손 {total - got}")
+        got = len(collected)
+        if got != expected:
+            raise RuntimeError(f"{tbl}: 공식 {expected} / 수집 {got} 불일치 — 기존 자료를 유지합니다")
+        with con:
+            con.execute("DELETE FROM nabo_rows WHERE tbl=?", (tbl,))
+            con.executemany("INSERT INTO nabo_rows VALUES(?,?,?,?,?,?,?,?)", collected)
+        log_harvest(con, "nabo", tbl, "fetch", total, got)
         name = CATALOG["nabo"]["tables"].get(tbl, {}).get("name", "")
         print(f"{tbl} {name}: 공식 {total} / 수집 {got}" + ("" if total == got else f"  ! 결손 {total - got}"))
 
@@ -398,6 +423,7 @@ def export(args):
     for b in CATALOG.get("breaks", []):
         if meta.get("scope") and any(meta["scope"].split("(")[0] in a for a in b["applies_to"]):
             notes.append(f"{b['year']}: {b['note']}")
+    out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", encoding="utf-8-sig", newline="") as f:
         if args.header_notes:
             f.write(f"# {args.tbl} {meta.get('name','')} | 출처 {meta.get('survey', meta.get('source',''))} | 연도 기준 {meta.get('year_basis','')} | 조회 {rows[0][-1][:10]}\n")
