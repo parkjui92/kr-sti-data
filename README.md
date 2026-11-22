@@ -110,7 +110,6 @@ KOSIS 자료 API는 표마다 분류 수준(objL1~4)이 달라 호출 형식을 
 |---|---|
 | 공식 통계 수집 | [kr-sti-data](https://github.com/parkjui92/kr-sti-data) |
 | 과제번호로 논문 추적 | [kr-grant-trace](https://github.com/parkjui92/kr-grant-trace) |
-| 기술 분야의 논문·국내 특허 동향 | [sci-concentration](https://github.com/parkjui92/sci-concentration) |
 | 논리모형·성과지표 설계 점검 | [rnd-program-logic](https://github.com/parkjui92/rnd-program-logic) |
 | 인과효과 추정 전 설계 점검 | [policy-did](https://github.com/parkjui92/policy-did) |
 | AI와 평가 문서 검토 | [rnd-eval-skills](https://github.com/parkjui92/rnd-eval-skills) |
